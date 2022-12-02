@@ -16,7 +16,7 @@ module.exports.campaigner_signup = async (req, res) => {
     };
 
     await campaignersignup(signupDetails);
-    return res.status(200).send('Admin Inserted.');
+    return res.status(200).send('Campaigner Inserted.');
   } catch (error) {
     return res.status(500).json({ msg: `${error.message}` });
   }
