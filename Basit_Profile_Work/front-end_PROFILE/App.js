@@ -13,7 +13,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Profile from "./Components/Profile";
 import Edit_Profile_Screen from "./Components/Edit_Profile_Screen";
 import Search_Screen from "./Components/Search_Screen";
-//import axios from "axios";
+import Change_Password from "./Components/Change_Password";
+import axios from "axios";
 const Stack = createNativeStackNavigator();
 export default function App() {
   const [Is_data, SetIs_data] = useState(true);
@@ -46,26 +47,28 @@ export default function App() {
     setpassword,
   };
   const integratee = async () => {
-    //await axios
-    // .get(
-    //   `https://crowd-funding-api.herokuapp.com/profile/useprofile/'sm0076@gmail.com'`
-    // )
-    // .then(function (response) {
-    //   let tempp = response.data[0];
-    // console.log(tempp.first_name);
-    setname("Basit");
-    setEmail("abbas@gmail.com");
-    setcontactno("03363700122");
-    setcnic("4210156276131");
-    setpassword("basit1");
-
-    // setPickedImagePath(tempp.C_IMAGE);
-    // SetIs_data(true);
-    // console.log(tempp.C_IMAGE);
-    // })
-    // .catch(function (error) {
-    //   console.log(error);
-    // });
+    await axios
+      .get(`http://192.168.1.5:3080/profile/useprofile`, {
+        headers: {
+          "x-access-token":
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImJidkBnbWFpbC5jb20iLCJuYW1lIjoiYXNhZCIsImlhdCI6MTY2OTk5NzM4MiwiZXhwIjoxNzAxNTMzMzgyfQ.2zu4wIzWEOrLxihR_A8tuY8bMjmS_6qqWtREhZT2xdg",
+        },
+      })
+      .then(function (response) {
+        let tempp = response.data[0];
+        // console.log(tempp.first_name);
+        setname(tempp.name);
+        setEmail(tempp.email);
+        setcontactno(tempp.phone_no);
+        setPickedImagePath(tempp.user_image);
+        setcnic(tempp.cnic);
+        setpassword(tempp.password);
+        SetIs_data(true);
+        // console.log(tempp.C_IMAGE);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   useEffect(() => {
     integratee();
@@ -108,6 +111,17 @@ export default function App() {
             }}
             name="Edit_Profile"
             component={Edit_Profile_Screen}
+          ></Stack.Screen>
+          <Stack.Screen
+            options={{
+              headerShown: true,
+              headerShadowVisible: false, // applied here
+              headerBackTitleVisible: false,
+              contentStyle: { backgroundColor: "#ffffff" },
+              headerStyle: { backgroundColor: "#ffffff" },
+            }}
+            name="Change Password"
+            component={Change_Password}
           ></Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>

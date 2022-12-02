@@ -12,66 +12,64 @@ import AppContext from "./AppContext";
 import { Avatar, TextInput } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { Platform } from "react-native";
-//import axios from "axios";
+import axios from "axios";
 function Edit_Profile_Screen({ navigation }) {
+  //const authCtx = useContext(AuthContext);
+  //const token = authCtx.token;
   const edit = async () => {
-    // console.log(new Date().toString());
-    // await axios
-    //   .patch(
-    //     `https://crowd-funding-api.herokuapp.com/profile/editprofile/'sm0076@gmail.com'`,
-    //     {
     myContext.setname(name);
     myContext.setcontactno(contactno);
-    myContext.setpassword(password);
-    //   }
-    // )
-    // .then(function (response) {
-    //   console.log(new Date().toString());
-    //   // console.log(firstname);
-    //   // console.log(lastname);
-    //   alert(response.data);
-    // })
-    // .catch(function (error) {
-    //   console.log(error);
-    // });
+    await axios
+      .patch(`http://192.168.1.5:3080/profile/editprofile`, {
+        name: name,
+        contact: contactno,
+        //token: token,
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImJidkBnbWFpbC5jb20iLCJuYW1lIjoiYXNhZCIsImlhdCI6MTY2OTk5NzM4MiwiZXhwIjoxNzAxNTMzMzgyfQ.2zu4wIzWEOrLxihR_A8tuY8bMjmS_6qqWtREhZT2xdg",
+      })
+      .then(function (response) {
+        console.log(new Date().toString());
+        alert(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
-  // const edit_image = async () => {
-  //   await axios
-  //     .patch(
-  //       `https://crowd-funding-api.herokuapp.com/profile/editprofile/'sm0076@gmail.com'`,
-  //       {
-  //         image: myContext.pickedImagePath,
-  //       }
-  //     )
-  //     .then(function (response) {
-  //       alert(response.data);
-  //     })
-  //     .catch(function (error) {
-  //       console.log(error);
-  //     });
-  // };
+  const edit_image = async () => {
+    await axios
+      .patch(`http://192.168.1.5:3080/profile/editprofile`, {
+        image: myContext.pickedImagePath,
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImJidkBnbWFpbC5jb20iLCJuYW1lIjoiYXNhZCIsImlhdCI6MTY2OTk5NzM4MiwiZXhwIjoxNzAxNTMzMzgyfQ.2zu4wIzWEOrLxihR_A8tuY8bMjmS_6qqWtREhZT2xdg",
+      })
+      .then(function (response) {
+        alert(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   useEffect(() => {
     setname(myContext.name);
     setcontactno(myContext.contactno);
     setcnic(myContext.cnic);
-    setpassword(myContext.password);
     setEmail(myContext.email);
   }, []);
   useEffect(() => {}, [errprompt]);
 
   const showImagePicker = async () => {
     myContext.setimageset(true);
-    myContext.setPickedImagePath(null);
+    myContext.setPickedImagePath("data:image/jpg;base64,null");
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert("You've refused to allow this appp to access your photos!");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync();
+    const result = await ImagePicker.launchImageLibraryAsync({ base64: true });
     if (!result.cancelled) {
-      myContext.setPickedImagePath(result);
+      myContext.setPickedImagePath(result.base64);
     }
   };
   const myContext = useContext(AppContext);
@@ -79,39 +77,27 @@ function Edit_Profile_Screen({ navigation }) {
   const [email, setEmail] = useState("");
   const [text, settext] = useState(true);
   const [contactno, setcontactno] = useState("");
-  const [password, setpassword] = useState("");
   const [cnic, setcnic] = useState("");
-  const [conpass, setconpass] = useState("");
   const [errprompt, seterrprompt] = useState({});
-  function checkcredentials(e1, e2, e3, e4) {
-    errors = {};
+  function checkcredentials(e1, e2) {
+    let errors = {};
     if (e1 === "") {
       errors.name = "Name is required";
       settext(false);
     }
-    if (e2.lenght !== 11) {
-      errors.contactno = "contact number must be 11 numbers";
-      settext(false);
-    } else if (e2 === "") {
+    if (e2 === "") {
       errors.contactno = "Contact number is required";
       settext(false);
-    }
-    if (e3 === "") {
-      errors.password = "Password is required";
-      settext(false);
-    } else if (e3.length < 8 && e3.length > 15) {
-      errors.password = "Password length should be between 8 and 15";
-      settext(false);
-    } else if (e3 !== e4) {
-      errors.conpass = "Password didnt match";
+    } else if (e2.length !== 11) {
+      errors.contactno = "contact number must be 11 numbers";
       settext(false);
     }
     return errors;
   }
   const submit = () => {
     settext(true);
-    seterrprompt(checkcredentials(name, contactno, password, conpass));
-    if (text) {
+    seterrprompt(checkcredentials(name, contactno));
+    if (Object.keys(checkcredentials(name, contactno)).length === 0) {
       edit();
     }
 
@@ -123,8 +109,13 @@ function Edit_Profile_Screen({ navigation }) {
       {Platform.OS === "ios" ? (
         <View style={{ flex: 1, alignItems: "center", marginTop: "4%" }}>
           {myContext.imageset ? (
-            myContext.pickedImagePath !== null ? (
-              <Avatar.Image size={100} source={myContext.pickedImagePath} />
+            myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
+              <Avatar.Image
+                size={100}
+                source={{
+                  uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                }}
+              />
             ) : (
               <Avatar.Image
                 size={100}
@@ -132,7 +123,7 @@ function Edit_Profile_Screen({ navigation }) {
               />
             )
           ) : (
-            (myContext.setPickedImagePath(null),
+            (myContext.setPickedImagePath("data:image/jpg;base64,null"),
             (
               <Avatar.Image
                 size={100}
@@ -147,12 +138,24 @@ function Edit_Profile_Screen({ navigation }) {
               setshow(true);
             }}
           />
+          <Button
+            title="Change Password"
+            color={"#D6252E"}
+            onPress={() => {
+              navigation.navigate("Change Password");
+            }}
+          />
         </View>
       ) : (
         <View style={{ flex: 1, alignItems: "center", marginTop: "4%" }}>
           {myContext.imageset ? (
-            myContext.pickedImagePath !== null ? (
-              <Avatar.Image size={100} source={myContext.pickedImagePath} />
+            myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
+              <Avatar.Image
+                size={100}
+                source={{
+                  uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                }}
+              />
             ) : (
               <Avatar.Image
                 size={100}
@@ -160,7 +163,7 @@ function Edit_Profile_Screen({ navigation }) {
               />
             )
           ) : (
-            (myContext.setPickedImagePath(null),
+            (myContext.setPickedImagePath("data:image/jpg;base64,null"),
             (
               <Avatar.Image
                 size={100}
@@ -176,6 +179,15 @@ function Edit_Profile_Screen({ navigation }) {
               setshow(true);
             }}
           />
+          <View style={{ marginBottom: "2%" }}></View>
+          <Button
+            title="Change Password"
+            color={"#D6252E"}
+            onPress={() => {
+              navigation.navigate("Change Password");
+              //console.log("hELLO");
+            }}
+          />
         </View>
       )}
       <View
@@ -183,6 +195,7 @@ function Edit_Profile_Screen({ navigation }) {
           flex: 3,
           backgroundColor: "#ffffff",
           borderTopWidth: 1,
+          marginTop: "5%",
           borderColor: "#dcdcdc",
         }}
       >
@@ -217,7 +230,7 @@ function Edit_Profile_Screen({ navigation }) {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginTop: 15,
+            marginTop: 3,
           }}
         >
           <Text style={{ marginLeft: "3%", fontSize: 17 }}>Contact</Text>
@@ -235,59 +248,15 @@ function Edit_Profile_Screen({ navigation }) {
             }}
           />
         </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 15,
-          }}
-        >
-          <Text style={{ marginLeft: "3%", fontSize: 17 }}>Password</Text>
-          <TextInput
-            value={password}
-            secureTextEntry={true}
-            onChangeText={(element) => {
-              setpassword(element);
-            }}
-            placeholder="Enter Password"
-            style={{
-              marginLeft: "6%",
-              backgroundColor: "#ffffff",
-              width: "80%",
-              height: 40,
-            }}
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 15,
-          }}
-        >
-          <Text style={{ marginLeft: "3%", fontSize: 17 }}>
-            Confirm Password
+        <View style={{ marginLeft: "25%", marginTop: "1%" }}>
+          <Text style={{ color: "red", fontSize: 14, fontWeight: "bold" }}>
+            {errprompt.contactno}
           </Text>
-          <TextInput
-            value={conpass}
-            secureTextEntry={true}
-            onChangeText={(element) => {
-              setconpass(element);
-            }}
-            placeholder="Confirm Password"
-            style={{
-              marginLeft: "6%",
-              backgroundColor: "#ffffff",
-              width: "80%",
-              height: 40,
-            }}
-          />
         </View>
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginTop: "4%",
             marginBottom: "4%",
           }}
         >
@@ -382,10 +351,12 @@ function Edit_Profile_Screen({ navigation }) {
             >
               <View style={{ alignItems: "center", marginTop: "5%" }}>
                 {myContext.imageset ? (
-                  myContext.pickedImagePath !== null ? (
+                  myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
                     <Avatar.Image
                       size={100}
-                      source={myContext.pickedImagePath}
+                      source={{
+                        uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                      }}
                     />
                   ) : (
                     <Avatar.Image
@@ -471,10 +442,12 @@ function Edit_Profile_Screen({ navigation }) {
             >
               <View style={{ alignItems: "center", marginTop: "5%" }}>
                 {myContext.imageset ? (
-                  myContext.pickedImagePath !== null ? (
+                  myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
                     <Avatar.Image
                       size={100}
-                      source={myContext.pickedImagePath}
+                      source={{
+                        uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                      }}
                     />
                   ) : (
                     <Avatar.Image

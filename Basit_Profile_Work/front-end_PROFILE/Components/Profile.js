@@ -20,8 +20,6 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 const Tab = createMaterialTopTabNavigator();
 const Profile = ({ navigation }) => {
   const myContext = useContext(AppContext);
-  const [backcount, setbackcount] = useState(0);
-  const [savecount, setsavecount] = useState(0);
   const name = "Syed Basit Abbas ";
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -56,8 +54,13 @@ const Profile = ({ navigation }) => {
             }}
           >
             {myContext.imageset ? (
-              myContext.pickedImagePath !== null ? (
-                <Avatar.Image size={100} source={myContext.pickedImagePath} />
+              myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
+                <Avatar.Image
+                  size={100}
+                  source={{
+                    uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                  }}
+                />
               ) : (
                 <Avatar.Image
                   size={100}
@@ -83,8 +86,13 @@ const Profile = ({ navigation }) => {
             }}
           >
             {myContext.imageset ? (
-              myContext.pickedImagePath !== null ? (
-                <Avatar.Image size={100} source={myContext.pickedImagePath} />
+              myContext.pickedImagePath !== "data:image/jpg;base64,null" ? (
+                <Avatar.Image
+                  size={100}
+                  source={{
+                    uri: `data:image/jpg;base64,${myContext.pickedImagePath}`,
+                  }}
+                />
               ) : (
                 <Avatar.Image
                   size={100}
@@ -161,10 +169,6 @@ const Profile = ({ navigation }) => {
           Edit Profile
         </Text>
       </Pressable>
-      <View style={{ flexDirection: "row", backgroundColor: "#ffffff" }}>
-        <Text style={{ marginLeft: "16%" }}>{backcount}</Text>
-        <Text style={{ marginLeft: "31%" }}>{savecount}</Text>
-      </View>
       <View
         style={{
           flex: 3,
