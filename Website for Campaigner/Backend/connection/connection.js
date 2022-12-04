@@ -3,8 +3,8 @@ const client = new Client({
   host: "localhost",
   user: "postgres",
   port: 5432,
-  password: "admin12345",
-  database: "Elevate_Database",
+  password: "12345",
+  database: "Elevate",
 });
 
 client

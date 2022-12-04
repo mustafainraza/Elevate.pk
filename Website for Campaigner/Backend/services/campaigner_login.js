@@ -5,7 +5,7 @@ const sqlConn = require('../db/db_connection')
 const campaignerlogin = async (loginDetails) => {
     if (!loginDetails.email || !loginDetails)throw new Error ('Required fields cannot be empty')
 
-    const result = await sqlConn.connection.query(`SELECT * FROM campaigner WHERE email LIKE '${loginDetails.email}'`)
+    const result = await sqlConn.connection.query(`SELECT * FROM users WHERE email LIKE '${loginDetails.email}'`)
     if (result.rowCount === 0) throw new Error ('Campaigner Does Not Exist.')
 
     else{
